@@ -1,0 +1,65 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: supply-chain-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-neondb_owner}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres_password}
+      POSTGRES_DB: ${DB_NAME:-neondb}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-neondb_owner}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - supply-chain-network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: supply-chain-backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-neondb_owner}:${DB_PASSWORD:-postgres_password}@postgres:5432/${DB_NAME:-neondb}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    networks:
+      - supply-chain-network
+    restart: unless-stopped
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: supply-chain-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - supply-chain-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  supply-chain-network:
+    driver: bridge
