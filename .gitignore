@@ -1,6 +1,9 @@
 # Node modules
 frontend/node_modules/
 
+# Next.js build output
+frontend/.next/
+
 # Python caches and environments
 __pycache__/
 *.py[cod]
