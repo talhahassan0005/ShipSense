@@ -26,6 +26,8 @@ app.add_middleware(
         "http://localhost:3001",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
+        "https://ship-sense.vercel.app",  # Update with your Vercel domain
+        "https://talhahassan0005-shipsense-backend.hf.space",  # HF Spaces backend
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
